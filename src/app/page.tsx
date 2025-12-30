@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -38,12 +38,82 @@ const vehicleImages = [
 
 export default function Home() {
   const [currentImage, setCurrentImage] = useState(0);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
     message: "",
   });
+
+  const [statsVisible, setStatsVisible] = useState(false);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    let animationId: number;
+    let isEnded = false;
+
+    const updateOpacity = () => {
+      if (!video.duration) {
+        animationId = requestAnimationFrame(updateOpacity);
+        return;
+      }
+
+      if (isEnded) {
+        video.style.opacity = "0";
+        animationId = requestAnimationFrame(updateOpacity);
+        return;
+      }
+
+      const timeRemaining = video.duration - video.currentTime;
+      let opacity = 1;
+
+      if (timeRemaining < 3) {
+        opacity = timeRemaining / 3;
+      } else if (video.currentTime < 1.5) {
+        opacity = video.currentTime / 1.5;
+      }
+
+      video.style.opacity = String(opacity);
+      animationId = requestAnimationFrame(updateOpacity);
+    };
+
+    const handleEnded = () => {
+      isEnded = true;
+      video.style.opacity = "0";
+      setTimeout(() => {
+        video.currentTime = 0;
+        isEnded = false;
+        video.play();
+      }, 2500);
+    };
+
+    animationId = requestAnimationFrame(updateOpacity);
+    video.addEventListener("ended", handleEnded);
+
+    return () => {
+      cancelAnimationFrame(animationId);
+      video.removeEventListener("ended", handleEnded);
+    };
+  }, []);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setStatsVisible(true);
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    const statsSection = document.getElementById("stats-bar");
+    if (statsSection) observer.observe(statsSection);
+
+    return () => observer.disconnect();
+  }, []);
 
   const nextImage = () => {
     setCurrentImage((prev) => (prev + 1) % vehicleImages.length);
@@ -63,10 +133,11 @@ export default function Home() {
     <main className="min-h-screen bg-white">
       {/* Hero Section */}
       <section className="relative h-screen flex items-end justify-center overflow-hidden">
+        <div className="absolute inset-0 bg-black" />
         <video
+          ref={videoRef}
           src="/images/hero.mp4"
           autoPlay
-          loop
           muted
           playsInline
           className="absolute inset-0 w-full h-full object-cover"
@@ -87,28 +158,40 @@ export default function Home() {
       </section>
 
       {/* Stats Bar */}
-      <section className="bg-[#1a1a1a] text-white py-12">
+      <section id="stats-bar" className="bg-[#1a1a1a] text-white py-12 overflow-hidden">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div>
+            <div
+              className={`transition-all duration-700 ${statsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+              style={{ transitionDelay: '0ms' }}
+            >
               <p className="lr-heading text-xs text-white/60 mb-2">Year</p>
               <p className="text-4xl md:text-5xl font-light">2016</p>
             </div>
-            <div>
+            <div
+              className={`transition-all duration-700 ${statsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+              style={{ transitionDelay: '150ms' }}
+            >
               <p className="lr-heading text-xs text-white/60 mb-2">Mileage</p>
               <div className="flex items-baseline justify-center gap-2">
                 <p className="text-4xl md:text-5xl font-light">81,000</p>
                 <p className="text-sm text-white/60">mi</p>
               </div>
             </div>
-            <div>
+            <div
+              className={`transition-all duration-700 ${statsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+              style={{ transitionDelay: '300ms' }}
+            >
               <p className="lr-heading text-xs text-white/60 mb-2">Engine</p>
               <div className="flex items-baseline justify-center gap-2">
                 <p className="text-4xl md:text-5xl font-light">3.0L</p>
                 <p className="text-sm text-white/60">V6 SC</p>
               </div>
             </div>
-            <div>
+            <div
+              className={`transition-all duration-700 ${statsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+              style={{ transitionDelay: '450ms' }}
+            >
               <p className="lr-heading text-xs text-white/60 mb-2">Asking Price</p>
               <div className="flex items-baseline justify-center gap-1">
                 <p className="text-lg text-white/60">$</p>
@@ -403,9 +486,9 @@ export default function Home() {
 
             <div className="mt-12 pt-8 border-t border-white/20 text-center">
               <p className="text-white/60 text-sm mb-4">Or reach out directly</p>
-              <a href="tel:+1234567890" className="inline-flex items-center gap-2 text-white hover:text-white/80 transition-colors">
+              <a href="tel:+17608096717" className="inline-flex items-center gap-2 text-white hover:text-white/80 transition-colors">
                 <Phone className="h-4 w-4" />
-                <span>(XXX) XXX-XXXX</span>
+                <span>760.809.6717</span>
               </a>
             </div>
           </div>
