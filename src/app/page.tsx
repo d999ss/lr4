@@ -63,12 +63,13 @@ export default function Home() {
     <main className="min-h-screen bg-white">
       {/* Hero Section */}
       <section className="relative h-screen flex items-end justify-center overflow-hidden">
-        <Image
-          src="/images/hero.png"
-          alt="2016 Land Rover LR4"
-          fill
-          className="object-cover"
-          priority
+        <video
+          src="/images/hero.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
@@ -219,6 +220,8 @@ export default function Home() {
           alt="2016 Land Rover LR4"
           fill
           className="object-cover"
+          quality={100}
+          unoptimized
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent" />
         <div className="relative z-10 container mx-auto px-4">
@@ -271,6 +274,8 @@ export default function Home() {
           alt="2016 Land Rover LR4"
           fill
           className="object-cover"
+          quality={100}
+          unoptimized
         />
         <div className="absolute inset-0 bg-gradient-to-l from-black/70 via-black/30 to-transparent" />
         <div className="relative z-10 container mx-auto px-4">
