@@ -116,13 +116,12 @@ export default function Home() {
     };
   }, [currentHeroVideo]);
 
-  // Heritage video cycling with smooth transitions
+  // Heritage video cycling with cross-fade (no gap)
   useEffect(() => {
     const video = heritageVideoRef.current;
     if (!video) return;
 
     let animationId: number;
-    let isEnded = false;
 
     const updateOpacity = () => {
       if (!video.duration) {
@@ -130,21 +129,15 @@ export default function Home() {
         return;
       }
 
-      if (isEnded) {
-        video.style.opacity = "0";
-        animationId = requestAnimationFrame(updateOpacity);
-        return;
-      }
-
       const timeRemaining = video.duration - video.currentTime;
       let opacity = 1;
 
-      // Fade out during last 2 seconds
-      if (timeRemaining < 2) {
-        opacity = timeRemaining / 2;
-      // Fade in during first 1 second
-      } else if (video.currentTime < 1) {
-        opacity = video.currentTime / 1;
+      // Fade out during last 1.5 seconds (other video shows through)
+      if (timeRemaining < 1.5) {
+        opacity = timeRemaining / 1.5;
+      // Fade in during first 0.5 second
+      } else if (video.currentTime < 0.5) {
+        opacity = video.currentTime / 0.5;
       }
 
       video.style.opacity = String(opacity);
@@ -152,11 +145,7 @@ export default function Home() {
     };
 
     const handleEnded = () => {
-      isEnded = true;
-      video.style.opacity = "0";
-      setTimeout(() => {
-        setCurrentHeritageVideo((prev) => (prev + 1) % heritageVideos.length);
-      }, 500);
+      setCurrentHeritageVideo((prev) => (prev + 1) % heritageVideos.length);
     };
 
     animationId = requestAnimationFrame(updateOpacity);
@@ -455,6 +444,16 @@ export default function Home() {
 
       {/* Full Bleed Feature Video 2 */}
       <section className="relative h-[80vh] flex items-center overflow-hidden">
+        {/* Background video (next in queue) - always visible underneath */}
+        <video
+          src={heritageVideos[(currentHeritageVideo + 1) % heritageVideos.length]}
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        {/* Foreground video with fade transition */}
         <video
           key={currentHeritageVideo}
           ref={heritageVideoRef}
