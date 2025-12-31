@@ -116,27 +116,56 @@ export default function Home() {
     };
   }, [currentHeroVideo]);
 
-  // Heritage video cycling
+  // Heritage video cycling with smooth transitions
   useEffect(() => {
     const video = heritageVideoRef.current;
     if (!video) return;
 
+    let animationId: number;
+    let isEnded = false;
+
+    const updateOpacity = () => {
+      if (!video.duration) {
+        animationId = requestAnimationFrame(updateOpacity);
+        return;
+      }
+
+      if (isEnded) {
+        video.style.opacity = "0";
+        animationId = requestAnimationFrame(updateOpacity);
+        return;
+      }
+
+      const timeRemaining = video.duration - video.currentTime;
+      let opacity = 1;
+
+      // Fade out during last 2 seconds
+      if (timeRemaining < 2) {
+        opacity = timeRemaining / 2;
+      // Fade in during first 1 second
+      } else if (video.currentTime < 1) {
+        opacity = video.currentTime / 1;
+      }
+
+      video.style.opacity = String(opacity);
+      animationId = requestAnimationFrame(updateOpacity);
+    };
+
     const handleEnded = () => {
+      isEnded = true;
       video.style.opacity = "0";
       setTimeout(() => {
         setCurrentHeritageVideo((prev) => (prev + 1) % heritageVideos.length);
-      }, 1000);
+      }, 500);
     };
 
-    // Fade in
-    video.style.opacity = "0";
-    video.style.transition = "opacity 1s ease";
-    setTimeout(() => {
-      video.style.opacity = "1";
-    }, 100);
-
+    animationId = requestAnimationFrame(updateOpacity);
     video.addEventListener("ended", handleEnded);
-    return () => video.removeEventListener("ended", handleEnded);
+
+    return () => {
+      cancelAnimationFrame(animationId);
+      video.removeEventListener("ended", handleEnded);
+    };
   }, [currentHeritageVideo]);
 
   useEffect(() => {
