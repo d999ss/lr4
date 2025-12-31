@@ -222,36 +222,58 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative h-screen flex items-end justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-black" />
-        <video
-          key={currentHeroVideo}
-          ref={videoRef}
-          src={heroVideos[currentHeroVideo]}
-          autoPlay
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+      <section className="relative flex flex-col md:block">
+        {/* Video Container */}
+        <div className="relative h-[60vh] md:h-screen overflow-hidden">
+          <div className="absolute inset-0 bg-black" />
+          <video
+            key={currentHeroVideo}
+            ref={videoRef}
+            src={heroVideos[currentHeroVideo]}
+            autoPlay
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          <div className="hidden md:block absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
-        <div className="relative z-10 container mx-auto px-4 pb-32 text-center">
-          <h1
-            className="text-6xl md:text-8xl lg:text-9xl font-light tracking-tight text-white mb-4 transition-opacity duration-300"
-            style={{ opacity: heroTitleOpacity }}
-          >
+          {/* Desktop overlay text */}
+          <div className="hidden md:flex absolute inset-0 items-end justify-center pb-32">
+            <div className="container mx-auto px-4 text-center">
+              <h1
+                className="text-8xl lg:text-9xl font-light tracking-tight text-white mb-4 transition-opacity duration-300"
+                style={{ opacity: heroTitleOpacity }}
+              >
+                {currentHeroVideo === 0 ? "LAND ROVER" : "LR4 HSE"}
+              </h1>
+              <p
+                className="text-xl text-white/80 max-w-xl mx-auto mb-8 font-light transition-opacity duration-300"
+                style={{ opacity: heroTitleOpacity }}
+              >
+                Legendary capability meets refined luxury. One owner, meticulously maintained.
+              </p>
+              <a
+                href="#contact"
+                className="lr-btn bg-white text-foreground border-white hover:bg-transparent hover:text-white transition-opacity duration-300"
+                style={{ opacity: heroTitleOpacity }}
+              >
+                Contact Seller
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile text below video */}
+        <div className="md:hidden bg-[#1a1a1a] py-12 px-4 text-center">
+          <h1 className="text-5xl font-light tracking-tight text-white mb-4">
             {currentHeroVideo === 0 ? "LAND ROVER" : "LR4 HSE"}
           </h1>
-          <p
-            className="text-lg md:text-xl text-white/80 max-w-xl mx-auto mb-8 font-light transition-opacity duration-300"
-            style={{ opacity: heroTitleOpacity }}
-          >
+          <p className="text-lg text-white/80 max-w-xl mx-auto mb-8 font-light">
             Legendary capability meets refined luxury. One owner, meticulously maintained.
           </p>
           <a
             href="#contact"
-            className="lr-btn bg-white text-foreground border-white hover:bg-transparent hover:text-white transition-opacity duration-300"
-            style={{ opacity: heroTitleOpacity }}
+            className="lr-btn bg-white text-foreground border-white hover:bg-transparent hover:text-white"
           >
             Contact Seller
           </a>
@@ -382,21 +404,38 @@ export default function Home() {
       </section>
 
       {/* Full Bleed Feature Video 1 */}
-      <section className="relative h-[80vh] flex items-center overflow-hidden">
-        <video
-          src="/images/terrain-video.mp4"
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent" />
-        <div className="relative z-10 container mx-auto px-4">
-          <div className="max-w-xl">
+      <section className="flex flex-col md:block">
+        {/* Video Container */}
+        <div className="relative h-[50vh] md:h-[80vh] overflow-hidden md:flex md:items-center">
+          <video
+            src="/images/terrain-video.mp4"
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          <div className="hidden md:block absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent" />
+
+          {/* Desktop overlay text */}
+          <div className="hidden md:block relative z-10 container mx-auto px-4">
+            <div className="max-w-xl">
+              <p className="lr-heading text-xs text-white/60 mb-4">Capability</p>
+              <h2 className="text-5xl font-light text-white mb-6">Terrain Response System</h2>
+              <p className="text-white/80 text-lg leading-relaxed">
+                The LR4&apos;s legendary Terrain Response system adapts to any surface - from rock crawling to highway cruising.
+                With air suspension and permanent four-wheel drive, it offers genuine off-road capability that few modern SUVs can match.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile text below video */}
+        <div className="md:hidden bg-[#1a1a1a] py-12 px-4">
+          <div className="max-w-xl mx-auto">
             <p className="lr-heading text-xs text-white/60 mb-4">Capability</p>
-            <h2 className="text-4xl md:text-5xl font-light text-white mb-6">Terrain Response System</h2>
-            <p className="text-white/80 text-lg leading-relaxed">
+            <h2 className="text-3xl font-light text-white mb-6">Terrain Response System</h2>
+            <p className="text-white/80 text-base leading-relaxed">
               The LR4&apos;s legendary Terrain Response system adapts to any surface - from rock crawling to highway cruising.
               With air suspension and permanent four-wheel drive, it offers genuine off-road capability that few modern SUVs can match.
             </p>
@@ -436,36 +475,58 @@ export default function Home() {
       </section>
 
       {/* Full Bleed Feature Video 2 */}
-      <section className="relative h-[80vh] flex items-center overflow-hidden">
-        {/* Background video (next in queue) - always visible underneath */}
-        <video
-          src={heritageVideos[(currentHeritageVideo + 1) % heritageVideos.length]}
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        {/* Foreground video with fade transition */}
-        <video
-          key={currentHeritageVideo}
-          ref={heritageVideoRef}
-          src={heritageVideos[currentHeritageVideo]}
-          autoPlay
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-l from-black/70 via-black/30 to-transparent" />
-        <div className="relative z-10 container mx-auto px-4">
-          <div className="max-w-xl ml-auto text-right">
+      <section className="flex flex-col md:block">
+        {/* Video Container */}
+        <div className="relative h-[50vh] md:h-[80vh] overflow-hidden md:flex md:items-center">
+          {/* Background video (next in queue) - always visible underneath */}
+          <video
+            src={heritageVideos[(currentHeritageVideo + 1) % heritageVideos.length]}
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          {/* Foreground video with fade transition */}
+          <video
+            key={currentHeritageVideo}
+            ref={heritageVideoRef}
+            src={heritageVideos[currentHeritageVideo]}
+            autoPlay
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          <div className="hidden md:block absolute inset-0 bg-gradient-to-l from-black/70 via-black/30 to-transparent" />
+
+          {/* Desktop overlay text */}
+          <div className="hidden md:block relative z-10 container mx-auto px-4">
+            <div className="max-w-xl ml-auto text-right">
+              <p className="lr-heading text-xs text-white/60 mb-4">Heritage</p>
+              <h2 className="text-5xl font-light text-white mb-6">The Last True Discovery</h2>
+              <p className="text-white/80 text-lg leading-relaxed mb-4">
+                Land Rover discontinued the LR4 after 2016, replacing it with the road-focused Discovery 5.
+                This makes the LR4 the final evolution of the original go-anywhere Discovery philosophy.
+              </p>
+              <p className="text-white/80 text-lg leading-relaxed">
+                While newer models prioritized on-road comfort, the LR4 maintained the rugged body-on-frame
+                heritage that made Land Rover legendary. It&apos;s increasingly sought after by enthusiasts
+                who value true capability over crossover compromises.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile text below video */}
+        <div className="md:hidden bg-[#1a1a1a] py-12 px-4">
+          <div className="max-w-xl mx-auto">
             <p className="lr-heading text-xs text-white/60 mb-4">Heritage</p>
-            <h2 className="text-4xl md:text-5xl font-light text-white mb-6">The Last True Discovery</h2>
-            <p className="text-white/80 text-lg leading-relaxed mb-4">
+            <h2 className="text-3xl font-light text-white mb-6">The Last True Discovery</h2>
+            <p className="text-white/80 text-base leading-relaxed mb-4">
               Land Rover discontinued the LR4 after 2016, replacing it with the road-focused Discovery 5.
               This makes the LR4 the final evolution of the original go-anywhere Discovery philosophy.
             </p>
-            <p className="text-white/80 text-lg leading-relaxed">
+            <p className="text-white/80 text-base leading-relaxed">
               While newer models prioritized on-road comfort, the LR4 maintained the rugged body-on-frame
               heritage that made Land Rover legendary. It&apos;s increasingly sought after by enthusiasts
               who value true capability over crossover compromises.
