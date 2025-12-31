@@ -53,28 +53,19 @@ export default function Home() {
     if (!video) return;
 
     let animationId: number;
-    let startTime = Date.now();
-    const MIN_PLAY_TIME = 8000; // Minimum 8 seconds
-    let willSwitchSoon = false;
+    const PLAY_TIME = 8000; // Exactly 8 seconds per video
+    const FADE_TIME = 1500; // 1.5s fade
 
     const updateOpacity = () => {
-      if (!video.duration) {
-        animationId = requestAnimationFrame(updateOpacity);
-        return;
-      }
-
-      const elapsed = Date.now() - startTime;
-      const timeRemaining = video.duration - video.currentTime;
+      const elapsed = Date.now() - startTimeRef.current;
       let opacity = 1;
 
-      // Check if we'll switch on next video end
-      willSwitchSoon = elapsed >= MIN_PLAY_TIME - 3000;
-
-      // Only fade out if we're actually going to switch soon
-      if (willSwitchSoon && timeRemaining < 3) {
-        opacity = timeRemaining / 3;
-      } else if (video.currentTime < 1.5) {
-        opacity = video.currentTime / 1.5;
+      // Fade out during last 1.5 seconds
+      if (elapsed > PLAY_TIME - FADE_TIME) {
+        opacity = Math.max(0, (PLAY_TIME - elapsed) / FADE_TIME);
+      // Fade in during first 1.5 seconds
+      } else if (elapsed < FADE_TIME) {
+        opacity = elapsed / FADE_TIME;
       }
 
       video.style.opacity = String(opacity);
@@ -82,17 +73,16 @@ export default function Home() {
       animationId = requestAnimationFrame(updateOpacity);
     };
 
-    const handleEnded = () => {
-      const elapsed = Date.now() - startTime;
-      // If video is shorter than minimum, loop seamlessly
-      if (elapsed < MIN_PLAY_TIME) {
-        video.currentTime = 0;
-        video.play().catch(() => {});
-        return;
-      }
-
-      // Switch to next video immediately (no extra delay)
+    // Timer-based switching - guarantees equal time
+    const startTimeRef = { current: Date.now() };
+    const switchTimer = setTimeout(() => {
       setCurrentHeroVideo((prev) => (prev + 1) % heroVideos.length);
+    }, PLAY_TIME);
+
+    // Loop video if it ends before switch time
+    const handleEnded = () => {
+      video.currentTime = 0;
+      video.play().catch(() => {});
     };
 
     const handleVisibilityChange = () => {
@@ -101,22 +91,15 @@ export default function Home() {
       }
     };
 
-    const handleInteraction = () => {
-      if (video.paused) {
-        video.play().catch(() => {});
-      }
-    };
-
     animationId = requestAnimationFrame(updateOpacity);
     video.addEventListener("ended", handleEnded);
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    document.addEventListener("click", handleInteraction, { once: true });
 
     return () => {
+      clearTimeout(switchTimer);
       cancelAnimationFrame(animationId);
       video.removeEventListener("ended", handleEnded);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
-      document.removeEventListener("click", handleInteraction);
     };
   }, [currentHeroVideo]);
 
@@ -126,50 +109,42 @@ export default function Home() {
     if (!video) return;
 
     let animationId: number;
-    let startTime = Date.now();
-    const MIN_PLAY_TIME = 8000; // Minimum 8 seconds for each video
+    const PLAY_TIME = 8000; // Exactly 8 seconds per video
+    const FADE_TIME = 1000; // 1s fade
 
     const updateOpacity = () => {
-      if (!video.duration) {
-        animationId = requestAnimationFrame(updateOpacity);
-        return;
-      }
-
-      const elapsed = Date.now() - startTime;
-      const timeRemaining = video.duration - video.currentTime;
+      const elapsed = Date.now() - startTimeRef.current;
       let opacity = 1;
 
-      // Check if we'll switch soon (within 1 second of minimum time)
-      const willSwitchSoon = elapsed >= MIN_PLAY_TIME - 1000;
-
-      // Only fade out if we're actually going to switch soon
-      if (willSwitchSoon && timeRemaining < 1) {
-        opacity = timeRemaining / 1;
-      // Fade in during first 0.5 second
-      } else if (video.currentTime < 0.5) {
-        opacity = video.currentTime / 0.5;
+      // Fade out during last 1 second
+      if (elapsed > PLAY_TIME - FADE_TIME) {
+        opacity = Math.max(0, (PLAY_TIME - elapsed) / FADE_TIME);
+      // Fade in during first 0.5 seconds
+      } else if (elapsed < 500) {
+        opacity = elapsed / 500;
       }
 
       video.style.opacity = String(opacity);
       animationId = requestAnimationFrame(updateOpacity);
     };
 
-    const handleEnded = () => {
-      const elapsed = Date.now() - startTime;
-      // If video is shorter than minimum, loop seamlessly
-      if (elapsed < MIN_PLAY_TIME) {
-        video.currentTime = 0;
-        video.play().catch(() => {});
-        return;
-      }
-      // Switch to next video
+    // Timer-based switching - guarantees equal time
+    const startTimeRef = { current: Date.now() };
+    const switchTimer = setTimeout(() => {
       setCurrentHeritageVideo((prev) => (prev + 1) % heritageVideos.length);
+    }, PLAY_TIME);
+
+    // Loop video if it ends before switch time
+    const handleEnded = () => {
+      video.currentTime = 0;
+      video.play().catch(() => {});
     };
 
     animationId = requestAnimationFrame(updateOpacity);
     video.addEventListener("ended", handleEnded);
 
     return () => {
+      clearTimeout(switchTimer);
       cancelAnimationFrame(animationId);
       video.removeEventListener("ended", handleEnded);
     };
