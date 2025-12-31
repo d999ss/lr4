@@ -31,8 +31,12 @@ const vehicleImages = [
 export default function Home() {
   const [currentImage, setCurrentImage] = useState(0);
   const [currentHeroVideo, setCurrentHeroVideo] = useState(0);
+  const [currentHeritageVideo, setCurrentHeritageVideo] = useState(0);
+  const [heroTitleOpacity, setHeroTitleOpacity] = useState(1);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const heritageVideoRef = useRef<HTMLVideoElement>(null);
   const heroVideos = ["/images/hero2.mp4", "/images/hero.mp4"];
+  const heritageVideos = ["/images/heritage-video2.mp4", "/images/heritage-video.mp4"];
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -59,6 +63,7 @@ export default function Home() {
 
       if (isEnded) {
         video.style.opacity = "0";
+        setHeroTitleOpacity(0);
         animationId = requestAnimationFrame(updateOpacity);
         return;
       }
@@ -73,6 +78,7 @@ export default function Home() {
       }
 
       video.style.opacity = String(opacity);
+      setHeroTitleOpacity(opacity);
       animationId = requestAnimationFrame(updateOpacity);
     };
 
@@ -109,6 +115,29 @@ export default function Home() {
       document.removeEventListener("click", handleInteraction);
     };
   }, [currentHeroVideo]);
+
+  // Heritage video cycling
+  useEffect(() => {
+    const video = heritageVideoRef.current;
+    if (!video) return;
+
+    const handleEnded = () => {
+      video.style.opacity = "0";
+      setTimeout(() => {
+        setCurrentHeritageVideo((prev) => (prev + 1) % heritageVideos.length);
+      }, 1000);
+    };
+
+    // Fade in
+    video.style.opacity = "0";
+    video.style.transition = "opacity 1s ease";
+    setTimeout(() => {
+      video.style.opacity = "1";
+    }, 100);
+
+    video.addEventListener("ended", handleEnded);
+    return () => video.removeEventListener("ended", handleEnded);
+  }, [currentHeritageVideo]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -196,13 +225,23 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
         <div className="relative z-10 container mx-auto px-4 pb-32 text-center">
-          <h1 className="text-6xl md:text-8xl lg:text-9xl font-light tracking-tight text-white mb-4">
-            LAND ROVER
+          <h1
+            className="text-6xl md:text-8xl lg:text-9xl font-light tracking-tight text-white mb-4 transition-opacity duration-300"
+            style={{ opacity: heroTitleOpacity }}
+          >
+            {currentHeroVideo === 0 ? "LAND ROVER" : "LR4 HSE"}
           </h1>
-          <p className="text-lg md:text-xl text-white/80 max-w-xl mx-auto mb-8 font-light">
+          <p
+            className="text-lg md:text-xl text-white/80 max-w-xl mx-auto mb-8 font-light transition-opacity duration-300"
+            style={{ opacity: heroTitleOpacity }}
+          >
             Legendary capability meets refined luxury. One owner, meticulously maintained.
           </p>
-          <a href="#contact" className="lr-btn bg-white text-foreground border-white hover:bg-transparent hover:text-white">
+          <a
+            href="#contact"
+            className="lr-btn bg-white text-foreground border-white hover:bg-transparent hover:text-white transition-opacity duration-300"
+            style={{ opacity: heroTitleOpacity }}
+          >
             Contact Seller
           </a>
         </div>
@@ -388,10 +427,11 @@ export default function Home() {
       {/* Full Bleed Feature Video 2 */}
       <section className="relative h-[80vh] flex items-center overflow-hidden">
         <video
-          src="/images/heritage-video.mp4"
+          key={currentHeritageVideo}
+          ref={heritageVideoRef}
+          src={heritageVideos[currentHeritageVideo]}
           autoPlay
           muted
-          loop
           playsInline
           className="absolute inset-0 w-full h-full object-cover"
         />
