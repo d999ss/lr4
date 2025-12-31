@@ -53,9 +53,9 @@ export default function Home() {
     if (!video) return;
 
     let animationId: number;
-    let isEnded = false;
     let startTime = Date.now();
     const MIN_PLAY_TIME = 8000; // Minimum 8 seconds
+    let willSwitchSoon = false;
 
     const updateOpacity = () => {
       if (!video.duration) {
@@ -63,17 +63,15 @@ export default function Home() {
         return;
       }
 
-      if (isEnded) {
-        video.style.opacity = "0";
-        setHeroTitleOpacity(0);
-        animationId = requestAnimationFrame(updateOpacity);
-        return;
-      }
-
+      const elapsed = Date.now() - startTime;
       const timeRemaining = video.duration - video.currentTime;
       let opacity = 1;
 
-      if (timeRemaining < 3) {
+      // Check if we'll switch on next video end
+      willSwitchSoon = elapsed >= MIN_PLAY_TIME - 3000;
+
+      // Only fade out if we're actually going to switch soon
+      if (willSwitchSoon && timeRemaining < 3) {
         opacity = timeRemaining / 3;
       } else if (video.currentTime < 1.5) {
         opacity = video.currentTime / 1.5;
@@ -86,29 +84,25 @@ export default function Home() {
 
     const handleEnded = () => {
       const elapsed = Date.now() - startTime;
-      // If video is shorter than minimum, loop until minimum time reached
+      // If video is shorter than minimum, loop seamlessly
       if (elapsed < MIN_PLAY_TIME) {
         video.currentTime = 0;
         video.play().catch(() => {});
         return;
       }
 
-      isEnded = true;
-      video.style.opacity = "0";
-      setTimeout(() => {
-        // Switch to the next video
-        setCurrentHeroVideo((prev) => (prev + 1) % heroVideos.length);
-      }, 2500);
+      // Switch to next video immediately (no extra delay)
+      setCurrentHeroVideo((prev) => (prev + 1) % heroVideos.length);
     };
 
     const handleVisibilityChange = () => {
-      if (!document.hidden && video.paused && !isEnded) {
+      if (!document.hidden && video.paused) {
         video.play().catch(() => {});
       }
     };
 
     const handleInteraction = () => {
-      if (video.paused && !isEnded) {
+      if (video.paused) {
         video.play().catch(() => {});
       }
     };
@@ -145,12 +139,15 @@ export default function Home() {
       const timeRemaining = video.duration - video.currentTime;
       let opacity = 1;
 
-      // Only fade out if we've played for minimum time
-      if (elapsed >= MIN_PLAY_TIME - 500 && timeRemaining < 0.5) {
-        opacity = timeRemaining / 0.5;
-      // Fade in during first 0.3 second
-      } else if (video.currentTime < 0.3) {
-        opacity = video.currentTime / 0.3;
+      // Check if we'll switch soon (within 1 second of minimum time)
+      const willSwitchSoon = elapsed >= MIN_PLAY_TIME - 1000;
+
+      // Only fade out if we're actually going to switch soon
+      if (willSwitchSoon && timeRemaining < 1) {
+        opacity = timeRemaining / 1;
+      // Fade in during first 0.5 second
+      } else if (video.currentTime < 0.5) {
+        opacity = video.currentTime / 0.5;
       }
 
       video.style.opacity = String(opacity);
@@ -159,12 +156,13 @@ export default function Home() {
 
     const handleEnded = () => {
       const elapsed = Date.now() - startTime;
-      // If video is shorter than minimum, loop until minimum time reached
+      // If video is shorter than minimum, loop seamlessly
       if (elapsed < MIN_PLAY_TIME) {
         video.currentTime = 0;
         video.play().catch(() => {});
         return;
       }
+      // Switch to next video
       setCurrentHeritageVideo((prev) => (prev + 1) % heritageVideos.length);
     };
 
