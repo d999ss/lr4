@@ -132,6 +132,8 @@ export default function Home() {
     if (!video) return;
 
     let animationId: number;
+    let startTime = Date.now();
+    const MIN_PLAY_TIME = 8000; // Minimum 8 seconds for each video
 
     const updateOpacity = () => {
       if (!video.duration) {
@@ -139,11 +141,12 @@ export default function Home() {
         return;
       }
 
+      const elapsed = Date.now() - startTime;
       const timeRemaining = video.duration - video.currentTime;
       let opacity = 1;
 
-      // Fade out during last 0.5 seconds (quick crossfade)
-      if (timeRemaining < 0.5) {
+      // Only fade out if we've played for minimum time
+      if (elapsed >= MIN_PLAY_TIME - 500 && timeRemaining < 0.5) {
         opacity = timeRemaining / 0.5;
       // Fade in during first 0.3 second
       } else if (video.currentTime < 0.3) {
@@ -155,6 +158,13 @@ export default function Home() {
     };
 
     const handleEnded = () => {
+      const elapsed = Date.now() - startTime;
+      // If video is shorter than minimum, loop until minimum time reached
+      if (elapsed < MIN_PLAY_TIME) {
+        video.currentTime = 0;
+        video.play().catch(() => {});
+        return;
+      }
       setCurrentHeritageVideo((prev) => (prev + 1) % heritageVideos.length);
     };
 
