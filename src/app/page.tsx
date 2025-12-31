@@ -142,12 +142,12 @@ export default function Home() {
       const timeRemaining = video.duration - video.currentTime;
       let opacity = 1;
 
-      // Fade out during last 1.5 seconds (other video shows through)
-      if (timeRemaining < 1.5) {
-        opacity = timeRemaining / 1.5;
-      // Fade in during first 0.5 second
-      } else if (video.currentTime < 0.5) {
-        opacity = video.currentTime / 0.5;
+      // Fade out during last 0.5 seconds (quick crossfade)
+      if (timeRemaining < 0.5) {
+        opacity = timeRemaining / 0.5;
+      // Fade in during first 0.3 second
+      } else if (video.currentTime < 0.3) {
+        opacity = video.currentTime / 0.3;
       }
 
       video.style.opacity = String(opacity);
