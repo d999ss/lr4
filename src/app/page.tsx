@@ -54,6 +54,8 @@ export default function Home() {
 
     let animationId: number;
     let isEnded = false;
+    let startTime = Date.now();
+    const MIN_PLAY_TIME = 8000; // Minimum 8 seconds
 
     const updateOpacity = () => {
       if (!video.duration) {
@@ -83,6 +85,14 @@ export default function Home() {
     };
 
     const handleEnded = () => {
+      const elapsed = Date.now() - startTime;
+      // If video is shorter than minimum, loop until minimum time reached
+      if (elapsed < MIN_PLAY_TIME) {
+        video.currentTime = 0;
+        video.play().catch(() => {});
+        return;
+      }
+
       isEnded = true;
       video.style.opacity = "0";
       setTimeout(() => {
