@@ -13,32 +13,26 @@ import {
 import Image from "next/image";
 
 const vehicleImages = [
-  { src: "/images/gallery-1.png", alt: "2016 Land Rover LR4" },
-  { src: "/images/defender-octa-060.jpg", alt: "2016 Land Rover LR4" },
-  { src: "/images/defender-octa-065.jpg", alt: "2016 Land Rover LR4" },
-  { src: "/images/defender-octa-067.jpg", alt: "2016 Land Rover LR4" },
-  { src: "/images/defender-octa-068.jpg", alt: "2016 Land Rover LR4" },
-  { src: "/images/defender-octa-069.jpg", alt: "2016 Land Rover LR4" },
-  { src: "/images/defender-octa-071.jpg", alt: "2016 Land Rover LR4" },
-  { src: "/images/defender-octa-073.jpg", alt: "2016 Land Rover LR4" },
-  { src: "/images/defender-octa-074.jpg", alt: "2016 Land Rover LR4" },
-  { src: "/images/defender-octa-075.jpg", alt: "2016 Land Rover LR4" },
-  { src: "/images/defender-octa-086.jpg", alt: "2016 Land Rover LR4" },
-  { src: "/images/defender-octa-087.jpg", alt: "2016 Land Rover LR4" },
-  { src: "/images/defender-octa-088.jpg", alt: "2016 Land Rover LR4" },
-  { src: "/images/defender-octa-089.jpg", alt: "2016 Land Rover LR4" },
-  { src: "/images/defender-octa-090.jpg", alt: "2016 Land Rover LR4" },
-  { src: "/images/defender-octa-106.jpg", alt: "2016 Land Rover LR4" },
-  { src: "/images/defender-octa-107.jpg", alt: "2016 Land Rover LR4" },
-  { src: "/images/defender-octa-111.jpg", alt: "2016 Land Rover LR4" },
-  { src: "/images/defender-octa-113.jpg", alt: "2016 Land Rover LR4" },
-  { src: "/images/defender-octa-121.jpg", alt: "2016 Land Rover LR4" },
-  { src: "/images/defender-octa-147.jpg", alt: "2016 Land Rover LR4" },
+  { src: "/images/gallery-03.png", alt: "2016 Land Rover LR4 HSE - Front View" },
+  { src: "/images/gallery-01.png", alt: "2016 Land Rover LR4 HSE - Exterior" },
+  { src: "/images/gallery-02.png", alt: "2016 Land Rover LR4 HSE - Rear View" },
+  { src: "/images/gallery-04.png", alt: "2016 Land Rover LR4 HSE - Interior" },
+  { src: "/images/gallery-05.png", alt: "2016 Land Rover LR4 HSE - Dashboard" },
+  { src: "/images/gallery-06.png", alt: "2016 Land Rover LR4 HSE - Wheel Detail" },
+  { src: "/images/gallery-07.png", alt: "2016 Land Rover LR4 HSE - Engine Bay" },
+  { src: "/images/gallery-08.png", alt: "2016 Land Rover LR4 HSE - Cargo Area" },
+  { src: "/images/gallery-09.png", alt: "2016 Land Rover LR4 HSE - Front Angle" },
+  { src: "/images/gallery-10.png", alt: "2016 Land Rover LR4 HSE - Rear Angle" },
+  { src: "/images/gallery-11.png", alt: "2016 Land Rover LR4 HSE - Detail Shot" },
+  { src: "/images/gallery-12.png", alt: "2016 Land Rover LR4 HSE - Exterior Detail" },
+  { src: "/images/gallery-13.png", alt: "2016 Land Rover LR4 HSE - Final View" },
 ];
 
 export default function Home() {
   const [currentImage, setCurrentImage] = useState(0);
+  const [currentHeroVideo, setCurrentHeroVideo] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const heroVideos = ["/images/hero2.mp4", "/images/hero.mp4"];
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -47,6 +41,8 @@ export default function Home() {
   });
 
   const [statsVisible, setStatsVisible] = useState(false);
+  const [navScrolled, setNavScrolled] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -84,20 +80,35 @@ export default function Home() {
       isEnded = true;
       video.style.opacity = "0";
       setTimeout(() => {
-        video.currentTime = 0;
-        isEnded = false;
-        video.play();
+        // Switch to the next video
+        setCurrentHeroVideo((prev) => (prev + 1) % heroVideos.length);
       }, 2500);
+    };
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden && video.paused && !isEnded) {
+        video.play().catch(() => {});
+      }
+    };
+
+    const handleInteraction = () => {
+      if (video.paused && !isEnded) {
+        video.play().catch(() => {});
+      }
     };
 
     animationId = requestAnimationFrame(updateOpacity);
     video.addEventListener("ended", handleEnded);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    document.addEventListener("click", handleInteraction, { once: true });
 
     return () => {
       cancelAnimationFrame(animationId);
       video.removeEventListener("ended", handleEnded);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      document.removeEventListener("click", handleInteraction);
     };
-  }, []);
+  }, [currentHeroVideo]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -115,6 +126,20 @@ export default function Home() {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setNavScrolled(window.scrollY > 100);
+
+      // Scroll progress calculation
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = (scrollTop / docHeight) * 100;
+      setScrollProgress(progress);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const nextImage = () => {
     setCurrentImage((prev) => (prev + 1) % vehicleImages.length);
   };
@@ -125,18 +150,44 @@ export default function Home() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
-    alert("Thanks for your interest! I'll be in touch soon.");
+    const subject = encodeURIComponent("Interested in 2016 Land Rover LR4 HSE");
+    const body = encodeURIComponent(`Name: ${formData.name}\nPhone: ${formData.phone}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`);
+    window.location.href = `mailto:donny@makebttr.com?subject=${subject}&body=${body}`;
   };
 
   return (
     <main className="min-h-screen bg-white">
+      {/* Scroll Progress Bar */}
+      <div
+        className="scroll-progress"
+        style={{ width: `${scrollProgress}%` }}
+      />
+
+      {/* Fixed Navigation */}
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${navScrolled ? 'bg-white/95 backdrop-blur-sm border-b border-border' : 'bg-transparent'}`}>
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between py-4 overflow-x-auto">
+            <div className="flex gap-8">
+              <a href="#gallery" className={`lr-heading text-xs transition-colors whitespace-nowrap ${navScrolled ? 'text-foreground hover:text-lr-green' : 'text-white/80 hover:text-white'}`}>Gallery</a>
+              <a href="#features" className={`lr-heading text-xs transition-colors whitespace-nowrap ${navScrolled ? 'text-foreground hover:text-lr-green' : 'text-white/80 hover:text-white'}`}>Features</a>
+              <a href="#specs" className={`lr-heading text-xs transition-colors whitespace-nowrap ${navScrolled ? 'text-foreground hover:text-lr-green' : 'text-white/80 hover:text-white'}`}>Specs</a>
+              <a href="#condition" className={`lr-heading text-xs transition-colors whitespace-nowrap ${navScrolled ? 'text-foreground hover:text-lr-green' : 'text-white/80 hover:text-white'}`}>Condition</a>
+              <a href="#contact" className={`lr-heading text-xs transition-colors whitespace-nowrap ${navScrolled ? 'text-foreground hover:text-lr-green' : 'text-white/80 hover:text-white'}`}>Contact</a>
+            </div>
+            <a href="#contact" className={`lr-btn text-xs py-2 px-6 hidden md:block ${navScrolled ? 'lr-btn-primary' : 'bg-white text-foreground border-white hover:bg-transparent hover:text-white'}`}>
+              Contact Seller
+            </a>
+          </div>
+        </div>
+      </nav>
+
       {/* Hero Section */}
       <section className="relative h-screen flex items-end justify-center overflow-hidden">
         <div className="absolute inset-0 bg-black" />
         <video
+          key={currentHeroVideo}
           ref={videoRef}
-          src="/images/hero.mp4"
+          src={heroVideos[currentHeroVideo]}
           autoPlay
           muted
           playsInline
@@ -146,7 +197,7 @@ export default function Home() {
 
         <div className="relative z-10 container mx-auto px-4 pb-32 text-center">
           <h1 className="text-6xl md:text-8xl lg:text-9xl font-light tracking-tight text-white mb-4">
-            LR4 HSE
+            LAND ROVER
           </h1>
           <p className="text-lg md:text-xl text-white/80 max-w-xl mx-auto mb-8 font-light">
             Legendary capability meets refined luxury. One owner, meticulously maintained.
@@ -202,23 +253,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Section Navigation */}
-      <nav className="sticky top-0 z-50 bg-white border-b border-border">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between py-4 overflow-x-auto">
-            <div className="flex gap-8">
-              <a href="#gallery" className="lr-heading text-xs hover:text-lr-green transition-colors whitespace-nowrap">Gallery</a>
-              <a href="#features" className="lr-heading text-xs hover:text-lr-green transition-colors whitespace-nowrap">Features</a>
-              <a href="#condition" className="lr-heading text-xs hover:text-lr-green transition-colors whitespace-nowrap">Condition</a>
-              <a href="#contact" className="lr-heading text-xs hover:text-lr-green transition-colors whitespace-nowrap">Contact</a>
-            </div>
-            <a href="#contact" className="lr-btn lr-btn-primary text-xs py-2 px-6 hidden md:block">
-              Contact Seller
-            </a>
-          </div>
-        </div>
-      </nav>
-
       {/* Gallery Section */}
       <section id="gallery" className="py-24">
         <div className="container mx-auto px-4">
@@ -232,10 +266,11 @@ export default function Home() {
                 <DialogTrigger asChild>
                   <div className="cursor-pointer w-full h-full">
                     <Image
+                      key={currentImage}
                       src={vehicleImages[currentImage].src}
                       alt={vehicleImages[currentImage].alt}
                       fill
-                      className="object-cover"
+                      className="object-cover ken-burns"
                     />
                   </div>
                 </DialogTrigger>
@@ -296,15 +331,15 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Full Bleed Feature Image 1 */}
-      <section className="relative h-[80vh] flex items-center">
-        <Image
-          src="/images/terrain.png"
-          alt="2016 Land Rover LR4"
-          fill
-          className="object-cover"
-          quality={100}
-          unoptimized
+      {/* Full Bleed Feature Video 1 */}
+      <section className="relative h-[80vh] flex items-center overflow-hidden">
+        <video
+          src="/images/terrain-video.mp4"
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent" />
         <div className="relative z-10 container mx-auto px-4">
@@ -326,96 +361,330 @@ export default function Home() {
           <h2 className="text-4xl md:text-5xl font-light text-center mb-16">Premium Features</h2>
 
           <div className="grid md:grid-cols-2 gap-px bg-border max-w-5xl mx-auto">
-            <div className="bg-white p-12">
-              <p className="lr-heading text-xs text-muted-foreground mb-4">Powertrain</p>
-              <h3 className="text-2xl font-light mb-4">3.0L Supercharged V6</h3>
-              <p className="text-muted-foreground">340 horsepower with smooth 8-speed automatic transmission. Responsive power delivery for both highway passing and trail climbing.</p>
+            <div className="bg-white p-12 card-glow transition-all duration-300 hover:-translate-y-1">
+              <p className="lr-heading text-xs text-muted-foreground mb-4">Off-Road</p>
+              <h3 className="text-2xl font-light mb-4">Terrain Response System</h3>
+              <p className="text-muted-foreground">Select from General, Snow, Mud, and Sand modes. The system automatically adjusts throttle response, transmission, and traction control for optimal grip.</p>
             </div>
-            <div className="bg-white p-12">
+            <div className="bg-white p-12 card-glow transition-all duration-300 hover:-translate-y-1">
               <p className="lr-heading text-xs text-muted-foreground mb-4">Suspension</p>
-              <h3 className="text-2xl font-light mb-4">Adaptive Air Suspension</h3>
-              <p className="text-muted-foreground">Height-adjustable air springs provide a smooth ride on pavement and increased clearance when venturing off-road.</p>
+              <h3 className="text-2xl font-light mb-4">Electronic Air Suspension</h3>
+              <p className="text-muted-foreground">Independent front and rear air suspension with automatic load leveling. Raises for off-road clearance, lowers for easy entry.</p>
             </div>
-            <div className="bg-white p-12">
+            <div className="bg-white p-12 card-glow transition-all duration-300 hover:-translate-y-1">
               <p className="lr-heading text-xs text-muted-foreground mb-4">Audio</p>
-              <h3 className="text-2xl font-light mb-4">Meridian Sound System</h3>
-              <p className="text-muted-foreground">Premium British audio engineering delivers exceptional sound quality throughout the cabin.</p>
+              <h3 className="text-2xl font-light mb-4">Meridian Surround Sound</h3>
+              <p className="text-muted-foreground">Premium 380W British audio system with SiriusXM satellite radio. HDD navigation with touchscreen interface.</p>
             </div>
-            <div className="bg-white p-12">
-              <p className="lr-heading text-xs text-muted-foreground mb-4">Safety</p>
-              <h3 className="text-2xl font-light mb-4">Surround Camera System</h3>
-              <p className="text-muted-foreground">360-degree visibility for confident maneuvering in tight spaces and trail navigation.</p>
+            <div className="bg-white p-12 card-glow transition-all duration-300 hover:-translate-y-1">
+              <p className="lr-heading text-xs text-muted-foreground mb-4">Vision</p>
+              <h3 className="text-2xl font-light mb-4">360° Camera System</h3>
+              <p className="text-muted-foreground">Surround cameras with blind spot monitoring, reverse traffic detection, and closing vehicle sensing. Tow assist included.</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Full Bleed Feature Image 2 */}
-      <section className="relative h-[80vh] flex items-center">
-        <Image
-          src="/images/heritage.png"
-          alt="2016 Land Rover LR4"
-          fill
-          className="object-cover"
-          quality={100}
-          unoptimized
+      {/* Full Bleed Feature Video 2 */}
+      <section className="relative h-[80vh] flex items-center overflow-hidden">
+        <video
+          src="/images/heritage-video.mp4"
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-l from-black/70 via-black/30 to-transparent" />
         <div className="relative z-10 container mx-auto px-4">
           <div className="max-w-xl ml-auto text-right">
             <p className="lr-heading text-xs text-white/60 mb-4">Heritage</p>
             <h2 className="text-4xl md:text-5xl font-light text-white mb-6">The Last True Discovery</h2>
+            <p className="text-white/80 text-lg leading-relaxed mb-4">
+              Land Rover discontinued the LR4 after 2016, replacing it with the road-focused Discovery 5.
+              This makes the LR4 the final evolution of the original go-anywhere Discovery philosophy.
+            </p>
             <p className="text-white/80 text-lg leading-relaxed">
-              The LR4 represents the final evolution of the legendary Discovery lineage.
-              Before the shift to the road-focused Discovery 5, this was the ultimate expression of
-              Land Rover&apos;s go-anywhere philosophy.
+              While newer models prioritized on-road comfort, the LR4 maintained the rugged body-on-frame
+              heritage that made Land Rover legendary. It&apos;s increasingly sought after by enthusiasts
+              who value true capability over crossover compromises.
             </p>
           </div>
         </div>
       </section>
 
+      {/* Specifications Section */}
+      <section id="specs" className="py-24 bg-[#1a1a1a] text-white">
+        <div className="container mx-auto px-4">
+          <p className="lr-heading text-xs text-white/60 text-center mb-4">Technical</p>
+          <h2 className="text-4xl md:text-5xl font-light text-center mb-16">Specifications</h2>
+
+          <div className="grid md:grid-cols-3 gap-12 max-w-5xl mx-auto mb-16">
+            <div>
+              <p className="lr-heading text-xs text-white/60 mb-6">Vehicle</p>
+              <div className="space-y-4">
+                <div className="flex justify-between border-b border-white/20 pb-2">
+                  <span className="text-white/60">Color</span>
+                  <span>Fuji White</span>
+                </div>
+                <div className="flex justify-between border-b border-white/20 pb-2">
+                  <span className="text-white/60">Interior</span>
+                  <span>Ebony Leather</span>
+                </div>
+                <div className="flex justify-between border-b border-white/20 pb-2">
+                  <span className="text-white/60">VIN</span>
+                  <span className="text-xs">SALAG2V61GA845591</span>
+                </div>
+                <div className="flex justify-between border-b border-white/20 pb-2">
+                  <span className="text-white/60">Assembly</span>
+                  <span>Solihull, UK</span>
+                </div>
+                <div className="flex justify-between border-b border-white/20 pb-2">
+                  <span className="text-white/60">Original Sticker</span>
+                  <span>$62,971</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <p className="lr-heading text-xs text-white/60 mb-6">Powertrain</p>
+              <div className="space-y-4">
+                <div className="flex justify-between border-b border-white/20 pb-2">
+                  <span className="text-white/60">Engine</span>
+                  <span>3.0L V6 Supercharged</span>
+                </div>
+                <div className="flex justify-between border-b border-white/20 pb-2">
+                  <span className="text-white/60">Output</span>
+                  <span>340 hp / 332 lb-ft</span>
+                </div>
+                <div className="flex justify-between border-b border-white/20 pb-2">
+                  <span className="text-white/60">Transmission</span>
+                  <span>8-Speed Auto</span>
+                </div>
+                <div className="flex justify-between border-b border-white/20 pb-2">
+                  <span className="text-white/60">Drivetrain</span>
+                  <span>Permanent 4WD</span>
+                </div>
+                <div className="flex justify-between border-b border-white/20 pb-2">
+                  <span className="text-white/60">Stop/Start</span>
+                  <span>Yes</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <p className="lr-heading text-xs text-white/60 mb-6">Economy</p>
+              <div className="space-y-4">
+                <div className="flex justify-between border-b border-white/20 pb-2">
+                  <span className="text-white/60">City</span>
+                  <span>15 MPG</span>
+                </div>
+                <div className="flex justify-between border-b border-white/20 pb-2">
+                  <span className="text-white/60">Highway</span>
+                  <span>19 MPG</span>
+                </div>
+                <div className="flex justify-between border-b border-white/20 pb-2">
+                  <span className="text-white/60">Combined</span>
+                  <span>16 MPG</span>
+                </div>
+                <div className="flex justify-between border-b border-white/20 pb-2">
+                  <span className="text-white/60">Fuel Type</span>
+                  <span>Gasoline</span>
+                </div>
+                <div className="flex justify-between border-b border-white/20 pb-2">
+                  <span className="text-white/60">Towing Capacity</span>
+                  <span>7,716 lbs</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Packages */}
+          <div className="max-w-5xl mx-auto mb-16">
+            <p className="lr-heading text-xs text-white/60 mb-6 text-center">Factory Packages</p>
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="border border-white/20 p-8 transition-all duration-300 hover:border-lr-green/50 hover:bg-white/5">
+                <h3 className="text-xl font-light mb-4">Vision Assist Package</h3>
+                <ul className="space-y-2 text-white/60 text-sm">
+                  <li>• Adaptive Xenon Headlights</li>
+                  <li>• Auto High Beam Assist</li>
+                  <li>• Blind Spot Monitoring</li>
+                  <li>• Closing Vehicle Sensing</li>
+                  <li>• Reverse Traffic Detection</li>
+                  <li>• 360° Surround Camera System</li>
+                  <li>• Tow Assist</li>
+                </ul>
+              </div>
+              <div className="border border-white/20 p-8 transition-all duration-300 hover:border-lr-green/50 hover:bg-white/5">
+                <h3 className="text-xl font-light mb-4">Black Design Package</h3>
+                <ul className="space-y-2 text-white/60 text-sm">
+                  <li>• 20&quot; Black 10-Spoke Wheels</li>
+                  <li>• Black Grille</li>
+                  <li>• Black Mirror Caps</li>
+                  <li>• Black Lacquer Interior Trim</li>
+                  <li>• LR4 Tailgate Badge</li>
+                  <li>• Extended Roof Rails</li>
+                </ul>
+              </div>
+              <div className="border border-white/20 p-8 transition-all duration-300 hover:border-lr-green/50 hover:bg-white/5">
+                <h3 className="text-xl font-light mb-4">Silver Edition Package</h3>
+                <p className="text-white/40 text-xs mb-4">Retail Value: $6,500</p>
+                <ul className="space-y-2 text-white/60 text-sm">
+                  <li>• Meridian Surround Sound 380W</li>
+                  <li>• SiriusXM Satellite Radio</li>
+                  <li>• InControl Apps</li>
+                  <li>• Protection Package</li>
+                  <li>• Ebony Cargo Cover</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Standard Features */}
+          <div className="max-w-5xl mx-auto">
+            <p className="lr-heading text-xs text-white/60 mb-6 text-center">Standard Equipment</p>
+            <div className="grid md:grid-cols-3 gap-8">
+              <div>
+                <h4 className="text-sm font-medium mb-4 text-white/80">Comfort</h4>
+                <ul className="space-y-2 text-white/60 text-sm">
+                  <li>• Power Adjustable Front Seats</li>
+                  <li>• Heated Front Seats</li>
+                  <li>• Leather Seating Surfaces</li>
+                  <li>• Dual Zone Climate Control</li>
+                  <li>• Tilt/Slide Sunroof + Alpine Roof</li>
+                  <li>• Power Fold-Flat Rear Seats</li>
+                  <li>• Rear Privacy Glass</li>
+                  <li>• Telescopic Steering Wheel</li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="text-sm font-medium mb-4 text-white/80">Technology</h4>
+                <ul className="space-y-2 text-white/60 text-sm">
+                  <li>• HDD Navigation System</li>
+                  <li>• Touchscreen Interface</li>
+                  <li>• Bluetooth Connectivity</li>
+                  <li>• USB Connectivity</li>
+                  <li>• Rear Parking Aids</li>
+                  <li>• Rear View Camera</li>
+                  <li>• Xenon Headlights w/ LED</li>
+                  <li>• Perimeter Alarm</li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="text-sm font-medium mb-4 text-white/80">Safety &amp; Stability</h4>
+                <ul className="space-y-2 text-white/60 text-sm">
+                  <li>• Dynamic Stability Control</li>
+                  <li>• Electronic Traction Control</li>
+                  <li>• Anti-Lock Braking System</li>
+                  <li>• Electronic Brakeforce Dist.</li>
+                  <li>• Hill Start Assist</li>
+                  <li>• Trailer Stability Assist</li>
+                  <li>• Emergency Brake Assist</li>
+                  <li>• Cornering Brake Control</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Why This LR4 */}
+      <section className="py-24">
+        <div className="container mx-auto px-4">
+          <p className="lr-heading text-xs text-muted-foreground text-center mb-4">Value</p>
+          <h2 className="text-4xl md:text-5xl font-light text-center mb-16">Why This LR4</h2>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+            <div className="text-center group">
+              <div className="w-16 h-16 mx-auto mb-6 border border-lr-green flex items-center justify-center transition-all duration-300 group-hover:bg-lr-green">
+                <span className="text-2xl font-light text-lr-green transition-colors duration-300 group-hover:text-white">7</span>
+              </div>
+              <h3 className="text-lg font-light mb-2">Seven Seats</h3>
+              <p className="text-sm text-muted-foreground">Three rows with power fold-flat rear seating. Stadium seating provides excellent visibility for all passengers.</p>
+            </div>
+            <div className="text-center group">
+              <div className="w-16 h-16 mx-auto mb-6 border border-lr-green flex items-center justify-center transition-all duration-300 group-hover:bg-lr-green">
+                <span className="text-2xl font-light text-lr-green transition-colors duration-300 group-hover:text-white">UK</span>
+              </div>
+              <h3 className="text-lg font-light mb-2">British Built</h3>
+              <p className="text-sm text-muted-foreground">Assembled in Solihull, UK. 75% British parts content. The heart of Land Rover heritage.</p>
+            </div>
+            <div className="text-center group">
+              <div className="w-16 h-16 mx-auto mb-6 border border-lr-green flex items-center justify-center transition-all duration-300 group-hover:bg-lr-green">
+                <span className="text-2xl font-light text-lr-green transition-colors duration-300 group-hover:text-white">4</span>
+              </div>
+              <h3 className="text-lg font-light mb-2">True 4WD</h3>
+              <p className="text-sm text-muted-foreground">Permanent four-wheel drive with Terrain Response. Not a crossover pretending to be an SUV.</p>
+            </div>
+            <div className="text-center group">
+              <div className="w-16 h-16 mx-auto mb-6 border border-lr-green flex items-center justify-center transition-all duration-300 group-hover:bg-lr-green">
+                <span className="text-2xl font-light text-lr-green transition-colors duration-300 group-hover:text-white">1</span>
+              </div>
+              <h3 className="text-lg font-light mb-2">One Owner</h3>
+              <p className="text-sm text-muted-foreground">Originally sold at Hornburg Land Rover Los Angeles. Meticulously maintained with full service history.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Condition Section */}
-      <section id="condition" className="py-24">
+      <section id="condition" className="py-24 bg-secondary">
         <div className="container mx-auto px-4">
           <p className="lr-heading text-xs text-muted-foreground text-center mb-4">Transparency</p>
           <h2 className="text-4xl md:text-5xl font-light text-center mb-16">Vehicle Condition</h2>
 
           <div className="grid md:grid-cols-3 gap-px bg-border max-w-5xl mx-auto">
-            <div className="bg-secondary p-8 text-center">
+            <div className="bg-secondary p-8 text-center transition-all duration-300 hover:bg-white">
               <p className="lr-heading text-xs text-muted-foreground mb-4">Exterior</p>
               <p className="text-3xl font-light text-lr-green mb-2">Excellent</p>
               <p className="text-sm text-muted-foreground">Minor wear consistent with age</p>
             </div>
-            <div className="bg-secondary p-8 text-center">
+            <div className="bg-secondary p-8 text-center transition-all duration-300 hover:bg-white">
               <p className="lr-heading text-xs text-muted-foreground mb-4">Interior</p>
               <p className="text-3xl font-light text-lr-green mb-2">Excellent</p>
               <p className="text-sm text-muted-foreground">Leather in great condition</p>
             </div>
-            <div className="bg-secondary p-8 text-center">
+            <div className="bg-secondary p-8 text-center transition-all duration-300 hover:bg-white">
               <p className="lr-heading text-xs text-muted-foreground mb-4">Mechanical</p>
               <p className="text-3xl font-light text-lr-green mb-2">Excellent</p>
               <p className="text-sm text-muted-foreground">Recently serviced</p>
             </div>
-            <div className="bg-secondary p-8 text-center">
+            <div className="bg-secondary p-8 text-center transition-all duration-300 hover:bg-white">
               <p className="lr-heading text-xs text-muted-foreground mb-4">Tires</p>
               <p className="text-3xl font-light mb-2">Good</p>
               <p className="text-sm text-muted-foreground">Adequate tread remaining</p>
             </div>
-            <div className="bg-secondary p-8 text-center">
+            <div className="bg-secondary p-8 text-center transition-all duration-300 hover:bg-white">
               <p className="lr-heading text-xs text-muted-foreground mb-4">Brakes</p>
               <p className="text-3xl font-light text-lr-green mb-2">Excellent</p>
               <p className="text-sm text-muted-foreground">Recently replaced</p>
             </div>
-            <div className="bg-secondary p-8 text-center">
+            <div className="bg-secondary p-8 text-center transition-all duration-300 hover:bg-white">
               <p className="lr-heading text-xs text-muted-foreground mb-4">Title</p>
               <p className="text-3xl font-light text-lr-green mb-2">Clean</p>
               <p className="text-sm text-muted-foreground">No accidents reported</p>
             </div>
           </div>
 
-          <p className="text-center text-muted-foreground mt-12">
+          <p className="text-center text-muted-foreground mt-12 mb-8">
             Full service records available upon request
           </p>
+
+          {/* Carfax */}
+          <div className="max-w-md mx-auto text-center">
+            <a
+              href="https://www.carfax.com/VehicleHistory/p/Report.cfx?partner=CVW_1&vin=SALAG2V61GA845591"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-3 bg-white border-2 border-[#00a0df] px-8 py-4 hover:bg-[#00a0df]/5 transition-colors"
+            >
+              <svg width="100" height="24" viewBox="0 0 100 24" className="flex-shrink-0">
+                <text x="0" y="18" fill="#00a0df" fontWeight="bold" fontSize="18" fontFamily="Arial, sans-serif">CARFAX</text>
+              </svg>
+              <span className="text-sm font-medium text-foreground">View Vehicle History Report</span>
+            </a>
+            <p className="text-xs text-muted-foreground mt-3">VIN: SALAG2V61GA845591</p>
+          </div>
         </div>
       </section>
 

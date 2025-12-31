@@ -50,7 +50,7 @@
 /* Land Rover Light Theme */
 :root {
   --radius: 0;
-  --lr-green: #005A2B;
+  --lr-green: #0B6838;
   --background: #ffffff;
   --foreground: #1a1a1a;
   --card: #f8f8f8;
@@ -63,25 +63,25 @@
   --secondary-foreground: #1a1a1a;
   --muted: #f5f5f5;
   --muted-foreground: #666666;
-  --accent: #005A2B;
+  --accent: #0B6838;
   --accent-foreground: #ffffff;
   --destructive: #dc2626;
   --border: #e5e5e5;
   --input: #e5e5e5;
-  --ring: #005A2B;
-  --chart-1: #005A2B;
+  --ring: #0B6838;
+  --chart-1: #0B6838;
   --chart-2: #1a1a1a;
   --chart-3: #666666;
   --chart-4: #999999;
   --chart-5: #cccccc;
   --sidebar: #f8f8f8;
   --sidebar-foreground: #1a1a1a;
-  --sidebar-primary: #005A2B;
+  --sidebar-primary: #0B6838;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #f5f5f5;
   --sidebar-accent-foreground: #1a1a1a;
   --sidebar-border: #e5e5e5;
-  --sidebar-ring: #005A2B;
+  --sidebar-ring: #0B6838;
 }
 
 @layer base {
@@ -115,4 +115,125 @@
   .lr-btn-white {
     @apply bg-white text-foreground border-white hover:bg-transparent hover:text-white hover:border-white;
   }
+}
+
+/* Ken Burns effect for gallery images */
+@keyframes kenburns {
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+  100% {
+    transform: scale(1.08) translate(-1%, -1%);
+  }
+}
+
+.ken-burns {
+  animation: kenburns 12s ease-out forwards;
+}
+
+/* Scroll progress bar */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #0B6838, #09592C);
+  z-index: 9999;
+  transition: width 0.1s ease-out;
+}
+
+
+/* Parallax container */
+.parallax-section {
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+/* Fade up animation for scroll reveals */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-up {
+  animation: fadeUp 0.8s ease-out forwards;
+}
+
+/* Stagger children animation */
+.stagger-children > * {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.stagger-children.visible > *:nth-child(1) { animation: fadeUp 0.6s ease-out 0.1s forwards; }
+.stagger-children.visible > *:nth-child(2) { animation: fadeUp 0.6s ease-out 0.2s forwards; }
+.stagger-children.visible > *:nth-child(3) { animation: fadeUp 0.6s ease-out 0.3s forwards; }
+.stagger-children.visible > *:nth-child(4) { animation: fadeUp 0.6s ease-out 0.4s forwards; }
+
+/* Smooth image hover zoom */
+.img-zoom {
+  overflow: hidden;
+}
+
+.img-zoom img,
+.img-zoom > div,
+.img-zoom [data-nimg] {
+  transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1) !important;
+}
+
+.img-zoom:hover img,
+.img-zoom:hover > div,
+.img-zoom:hover [data-nimg] {
+  transform: scale(1.05) !important;
+}
+
+/* Text gradient effect */
+.text-gradient {
+  background: linear-gradient(135deg, #0B6838 0%, #09592C 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glow effect for feature cards */
+.card-glow {
+  transition: box-shadow 0.3s ease;
+}
+
+.card-glow:hover {
+  box-shadow: 0 0 30px rgba(11, 104, 56, 0.15);
+}
+
+/* Number counter animation */
+@keyframes countUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Subtle pulse for CTA */
+@keyframes subtlePulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(11, 104, 56, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(11, 104, 56, 0);
+  }
+}
+
+.pulse-cta {
+  animation: subtlePulse 3s infinite;
 }
